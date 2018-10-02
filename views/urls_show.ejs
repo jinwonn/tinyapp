@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>TinyApp</title>
+  </head>
+  <body>
+    <H1>Shortened URL</H1>
+    <table>
+      <thead>
+        <th>Shortened</th>
+        <th>URLs</th>
+      </thead>
+      <tbody>
+        <tr>  
+          <td>
+            <% for (var url in urls) { %>
+              <li><%=JSON.stringify(url)%></li>
+            <% }; %>
+          </td>
+          <td>
+            <% for (var url in urls) { %>
+              <li><%=JSON.stringify(urls[url])%></li>
+            <% }; %>
+          </td>
+        </tr>  
+      </tbody>
+    </table>
+    
+    <a href='#'>link to shortnener</a>
+  </body>
+</html>
