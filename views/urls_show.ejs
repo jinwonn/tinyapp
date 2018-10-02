@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <% include ../partials/head %>
     <title>TinyApp</title>
   </head>
   <body>
@@ -8,19 +9,19 @@
     <table>
       <thead>
         <th>Shortened</th>
-        <th>URLs</th>
+        <th>URL</th>
       </thead>
       <tbody>
         <tr>  
           <td>
-            <% for (var url in urls) { %>
-              <li><%=JSON.stringify(url)%></li>
-            <% }; %>
+            
+              <li><%=shortURL%></li>
+            
           </td>
           <td>
-            <% for (var url in urls) { %>
-              <li><%=JSON.stringify(urls[url])%></li>
-            <% }; %>
+            
+              <li><%=longURL%></li>
+            
           </td>
         </tr>  
       </tbody>
