@@ -22,10 +22,16 @@
               <li><%=JSON.stringify(urls[url])%></li>
             <% }; %>
           </td>
+          <td>
+            <% for (var url in urls) { %>
+              <form method="POST" action="/urls/<%=url%>/delete">
+                <input type="submit" value="Delete">
+              </form>
+            <% }; %>
+          </td>
         </tr>  
       </tbody>
     </table>
-    
     <a href='#'>link to shortnener</a>
   </body>
 </html>
