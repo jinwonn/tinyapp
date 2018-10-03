@@ -5,11 +5,11 @@
     <title>TinyApp</title>
   </head>
   <body>
-    <H1>Shortened URL</H1>
+    <H1>Here is your shortened URL!</H1>
     <table>
       <thead>
         <th>Shortened</th>
-        <th>URL</th>
+        <th>Current URL</th>
       </thead>
       <tbody>
         <tr>  
@@ -26,7 +26,11 @@
         </tr>  
       </tbody>
     </table>
-    
-    <a href='#'>link to shortnener</a>
+    <form action="/urls/:id" method="POST">
+      <label>Enter a URL to Update:</label>
+      <input id="longURL" type="text" name="longURL" placeholder="http://" style="width: 300px">
+      <input type="submit" value="Update">
+      <br>
+    <a href='new'>Link to short</a>
   </body>
 </html>

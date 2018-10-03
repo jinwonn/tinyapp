@@ -24,6 +24,13 @@
           </td>
           <td>
             <% for (var url in urls) { %>
+              <form action="/urls/<%=url%>">
+                <input type="submit" value="Edit">
+              </form>
+            <% }; %>
+          </td>
+          <td>
+            <% for (var url in urls) { %>
               <form method="POST" action="/urls/<%=url%>/delete">
                 <input type="submit" value="Delete">
               </form>
@@ -32,6 +39,6 @@
         </tr>  
       </tbody>
     </table>
-    <a href='#'>link to shortnener</a>
+    <a href='new'>Link to short</a>
   </body>
 </html>
