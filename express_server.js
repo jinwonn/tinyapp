@@ -1,4 +1,5 @@
 var express = require("express");
+var cookieParser = require('cookie-parser')
 var app = express();
 var PORT = 8080; // default port 8080
 
@@ -84,4 +85,12 @@ app.post("/urls/:id", (req, res) => {
   urlDatabase[shortURL] = longURL
 
   res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
+});
+
+app.post("/login", (req, res) => {
+  let username = req.body.username
+console.log(username)
+  res.cookie('username', req.body.username)
+
+  res.redirect(`http://localhost:${PORT}/urls/`);
 });
