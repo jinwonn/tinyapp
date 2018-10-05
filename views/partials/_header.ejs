@@ -1,9 +1,16 @@
 <h1> <a href="/urls">TINYAPP</a> </h1>
 <body>
+  <% if (!username) {%>
 <form action="/login" method="POST">
   <label for="username">Username:</label>
   <input id="username" type="text" name="username" style="width: 100px">
-  <input type="submit" value="Submit">
+  <input type="submit" value="Sign In">
+  <%} else {%>
+    Signed in as: <%=username%>
+    <form action="/logout" method="POST">
+      <input type="submit" value="Logout">
+    </form>
+  <%}%>
 </form>
 <br>
 </body>
