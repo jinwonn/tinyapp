@@ -20,8 +20,8 @@ const users = {
 
 //database for shortened urls
 var urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  "b2xVn2": { "longu": "http://www.lighthouselabs.ca", "userID": 123456 },
+  "9sm5xK": { "longu": "http://www.google.com", "userID": 123457 }
 };
 
 //generates a random alpha numeric string for shortURL assignment
@@ -53,38 +53,56 @@ app.get("/hello", (req, res) => {
 
 //page to show all shortened urls
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
-  res.render("urls_index", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { urls: urlDatabase, useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
+    res.render("urls_index", templateVars);
+    } else {
+      res.redirect(`http://localhost:${PORT}/login`);
+    }
 });
 
 //page for new URL shortening
 app.get("/urls/new", (req, res) => {
+  if (req.cookies["user_id"]) {
   let templateVars = {useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
   res.render("urls_new", templateVars)
+  } else {
+    res.redirect(`http://localhost:${PORT}/login`);
+  }
 });
 
 //for creation of new short and long URL pair
 app.post("/urls", (req, res) => {
-  var shortURL = generateRandomString(6)
-  let longURL = req.body.longURL
-  urlDatabase[shortURL] = longURL
-
-  res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
-  // res.send("Ok");         // Respond with 'Ok' (we will replace this)
+  if (req.cookies["user_id"]) {
+    var shortURL = generateRandomString(6)
+    let longURL = req.body.longURL
+    let user = req.cookies["user_id"]
+    urlDatabase[shortURL] = { longu: longURL,
+                              userID: user }
+  
+    res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
+    // res.send("Ok");         // Respond with 'Ok' (we will replace this)
+    } else {
+      res.redirect(`http://localhost:${PORT}/login`);
+    }
 });
 
 //redirects to longURL when shortURL is put in address 
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL
-  let longURL = urlDatabase[shortURL]
+  let longURL = urlDatabase[shortURL].longu
   res.redirect(longURL);
 });
 
 
 //page for specific shortURL
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], userid: req.cookies["user_id"], useremail: users[req.cookies["user_id"]].email};
-  res.render("urls_show", templateVars);
+  if (req.cookies["user_id"]) {
+    let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id].longu, userid: req.cookies["user_id"], useremail: users[req.cookies["user_id"]].email};
+    res.render("urls_show", templateVars);
+    } else {
+      res.redirect(`http://localhost:${PORT}/login`);
+    }
 });
 
 //page for registration
@@ -126,7 +144,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id
   let longURL = req.body.longURL
-  urlDatabase[shortURL] = longURL
+  urlDatabase[shortURL].longu = longURL
   res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
 });
 
