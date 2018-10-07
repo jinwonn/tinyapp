@@ -5,6 +5,10 @@
   <label for="username">Username:</label>
   <input id="username" type="text" name="username" style="width: 100px">
   <input type="submit" value="Sign In">
+  </form>
+  <form action="/register">
+    <input type="submit" value="Sign Up">
+  </form>
   <%} else {%>
     Signed in as: <%=username%>
     <form action="/logout" method="POST">

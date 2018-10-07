@@ -6,6 +6,19 @@ var PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
 app.use(bodyParser.urlencoded({extended: true}));
 
+const users = { 
+  "1": {
+    id: "1", 
+    email: "user@test.com", 
+    password: "test"
+  },
+ "2": {
+    id: "2", 
+    email: "user2@test.com", 
+    password: "pass2"
+  }
+}
+
 app.set("view engine", "ejs");
 app.use(cookieParser());
 
@@ -14,6 +27,7 @@ var urlDatabase = {
   "9sm5xK": "http://www.google.com"
 };
 
+//generates a random alpha numeric string for shortURL assignment
 function generateRandomString(length) {
     var randomshort = "";
     var possibilities = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
@@ -25,7 +39,7 @@ function generateRandomString(length) {
 }
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.send("Hello this is Tinyapp!");
 });
 
 app.listen(PORT, () => {
@@ -40,11 +54,13 @@ app.get("/hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
 
+//page to show all shortened urls
 app.get("/urls", (req, res) => {
   let templateVars = { urls: urlDatabase, username: req.cookies["username"]};
   res.render("urls_index", templateVars);
 });
 
+//page for new URL shortening
 app.get("/urls/new", (req, res) => {
   let templateVars = { username: req.cookies["username"]};
   res.render("urls_new", templateVars)
@@ -67,11 +83,22 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 
+//page for specific shortURL
 app.get("/urls/:id", (req, res) => {
   let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"]};
   res.render("urls_show", templateVars);
 });
 
+//page for registration
+app.get("/register", (req, res) => {
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"]};
+  res.render("register", templateVars);
+});
+
+//post for resgistration 
+app.post("/register", (req, res) => {
+  res.redirect("/urls");
+});
 
 //post for deleting entry pair of shortURL and longURL
 app.post("/urls/:id/delete", (req, res) => {
@@ -84,10 +111,7 @@ app.post("/urls/:id/delete", (req, res) => {
 app.post("/urls/:id", (req, res) => {
   let shortURL = req.params.id
   let longURL = req.body.longURL
-  
-  console.log(req.params.id);
   urlDatabase[shortURL] = longURL
-
   res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
 });
 
@@ -95,7 +119,6 @@ app.post("/urls/:id", (req, res) => {
 app.post("/login", (req, res) => {
   let username = req.body.username
   res.cookie('username', req.body.username)
-
   res.redirect(`http://localhost:${PORT}/urls/`);
 });
 
