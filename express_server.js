@@ -2,26 +2,23 @@ var express = require("express");
 var cookieParser = require('cookie-parser')
 var app = express();
 var PORT = 8080; // default port 8080
-
 const bodyParser = require("body-parser");
-app.use(bodyParser.urlencoded({extended: true}));
 
-const users = { 
-  "1": {
-    id: "1", 
-    email: "user@test.com", 
-    password: "test"
-  },
- "2": {
-    id: "2", 
-    email: "user2@test.com", 
-    password: "pass2"
-  }
-}
 
 app.set("view engine", "ejs");
 app.use(cookieParser());
+app.use(bodyParser.urlencoded({extended: true}));
 
+// database for users of website 
+const users = { 
+  "123456": {
+    id: "123456", 
+    email: "email@email.com", 
+    password: "password"
+  },
+}
+
+//database for shortened urls
 var urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
@@ -97,6 +94,15 @@ app.get("/register", (req, res) => {
 
 //post for resgistration 
 app.post("/register", (req, res) => {
+  let newId = generateRandomString(6)
+  let email = req.body.email
+  let password = req.body.password
+  users[newId] = {
+    id: newId,
+    email: req.body.email,
+    password: req.body.password
+  };
+  res.cookie('user_id', newId)
   res.redirect("/urls");
 });
 
