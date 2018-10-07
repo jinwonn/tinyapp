@@ -53,13 +53,13 @@ app.get("/hello", (req, res) => {
 
 //page to show all shortened urls
 app.get("/urls", (req, res) => {
-  let templateVars = { urls: urlDatabase, username: req.cookies["username"]};
+  let templateVars = { urls: urlDatabase, useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
   res.render("urls_index", templateVars);
 });
 
 //page for new URL shortening
 app.get("/urls/new", (req, res) => {
-  let templateVars = { username: req.cookies["username"]};
+  let templateVars = {useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
   res.render("urls_new", templateVars)
 });
 
@@ -73,6 +73,7 @@ app.post("/urls", (req, res) => {
   // res.send("Ok");         // Respond with 'Ok' (we will replace this)
 });
 
+//redirects to longURL when shortURL is put in address 
 app.get("/u/:shortURL", (req, res) => {
   let shortURL = req.params.shortURL
   let longURL = urlDatabase[shortURL]
@@ -82,28 +83,36 @@ app.get("/u/:shortURL", (req, res) => {
 
 //page for specific shortURL
 app.get("/urls/:id", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"]};
+  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], userid: req.cookies["user_id"], useremail: users[req.cookies["user_id"]].email};
   res.render("urls_show", templateVars);
 });
 
 //page for registration
 app.get("/register", (req, res) => {
-  let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id], username: req.cookies["username"]};
-  res.render("register", templateVars);
+  res.render("register");
+});
+
+//page for login
+app.get("/login", (req, res) => {
+  res.render("login");
 });
 
 //post for resgistration 
 app.post("/register", (req, res) => {
-  let newId = generateRandomString(6)
-  let email = req.body.email
-  let password = req.body.password
-  users[newId] = {
-    id: newId,
-    email: req.body.email,
-    password: req.body.password
-  };
-  res.cookie('user_id', newId)
-  res.redirect("/urls");
+  if (req.body.email === '' || req.body.password === '') {
+    res.status(400).send('ERROR!!! Please input email and password to register. <a href="/register"> <br> Go Back</a>');
+    } else {
+      let newId = generateRandomString(6)
+      let email = req.body.email
+      let password = req.body.password
+      users[newId] = {
+        id: newId,
+        email: req.body.email,
+        password: req.body.password
+      };
+      res.cookie('user_id', newId)
+      res.redirect("/urls");
+  }
 });
 
 //post for deleting entry pair of shortURL and longURL
@@ -123,13 +132,18 @@ app.post("/urls/:id", (req, res) => {
 
 //creates cookie for inputted username
 app.post("/login", (req, res) => {
-  let username = req.body.username
-  res.cookie('username', req.body.username)
+  for (id in users) {
+  if (req.body.email === users[id].email && users[id].password === req.body.password) {
+    res.cookie('user_id', id)
+  } else {
+    res.status(403).send('ERROR!!! Please input correct email and password to login. <a href="/login"> <br> Go Back</a>');
+  }
   res.redirect(`http://localhost:${PORT}/urls/`);
+  }
 });
 
 //POST for logout
 app.post("/logout", (req, res) => {
-  res.clearCookie('username');
+  res.clearCookie('user_id');
   res.redirect(`http://localhost:${PORT}/urls/`);
 });

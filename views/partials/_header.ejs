@@ -1,18 +1,16 @@
 <h1> <a href="/urls">TINYAPP</a> </h1>
 <body>
-  <% if (!username) {%>
-<form action="/login" method="POST">
-  <label for="username">Username:</label>
-  <input id="username" type="text" name="username" style="width: 100px">
-  <input type="submit" value="Sign In">
-  </form>
-  <form action="/register">
-    <input type="submit" value="Sign Up">
-  </form>
-  <%} else {%>
-    Signed in as: <%=username%>
+  <% if (userid) {%>
+    Signed in as: <%=useremail%>
     <form action="/logout" method="POST">
       <input type="submit" value="Logout">
+    </form>
+  <%} else {%>
+    <form action="/Login">
+      <input type="submit" value="Login">
+    </form>
+    <form action="/register">
+      <input type="submit" value="Sign Up">
     </form>
   <%}%>
 </form>
