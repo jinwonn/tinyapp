@@ -83,7 +83,7 @@ app.get("/urls", (req, res) => {
   if (req.session.user_id) {
     let user = req.session.user_id
     let urlDatabases = urlsForUser(urlDatabase, user)
-    let templateVars = { urls: urlDatabases, userid: req.session.user_id};
+    let templateVars = { urls: urlDatabases, userid: req.session.user_id, useremail: users[req.session.user_id].email};
     res.render("urls_index", templateVars);
     } else {
       res.redirect(`http://localhost:${PORT}/login`);
@@ -93,7 +93,7 @@ app.get("/urls", (req, res) => {
 //page for new URL shortening
 app.get("/urls/new", (req, res) => {
   if (req.session.user_id) {
-  let templateVars = {userid: req.session.user_id};
+  let templateVars = {userid: req.session.user_id, useremail: users[req.session.user_id].email};
   res.render("urls_new", templateVars)
   } else {
     res.redirect(`http://localhost:${PORT}/login`);
@@ -132,7 +132,7 @@ app.get("/urls/:id", (req, res) => {
     if (!urlDatabases[req.params.id]) {
       res.status(406).send('ERROR!!! shortURL does not belong to you. <a href="/urls"> <br> Go Back</a>');
       } else {
-        let templateVars = { shortURL: req.params.id, longURL: urlDatabases[req.params.id].longu, userid: req.session.user_id };
+        let templateVars = { shortURL: req.params.id, longURL: urlDatabases[req.params.id].longu, userid: req.session.user_id, useremail: users[req.session.user_id].email };
         res.render("urls_show", templateVars);
       }
     } else {
