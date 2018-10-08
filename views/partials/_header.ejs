@@ -1,7 +1,7 @@
 <h1> <a href="/urls">TINYAPP</a> </h1>
 <body>
   <% if (userid) {%>
-    Signed in as: <%=useremail%>
+    Signed in as: <%=userid%>
     <form action="/logout" method="POST">
       <input type="submit" value="Logout">
     </form>

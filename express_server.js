@@ -10,17 +10,18 @@ app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
 
 // database for users of website 
-const users = { 
+var users = { 
   "123456": {
     id: "123456", 
     email: "email@email.com", 
     password: "password"
-  },
+  }
 }
 
 //database for shortened urls
 var urlDatabase = {
   "b2xVn2": { "longu": "http://www.lighthouselabs.ca", "userID": 123456 },
+  "asdVn2": { "longu": "http://www.hotmail.com", "userID": 123456 },
   "9sm5xK": { "longu": "http://www.google.com", "userID": 123457 }
 };
 
@@ -30,10 +31,21 @@ function generateRandomString(length) {
     var possibilities = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   
     for (var i = 0; i < (length); i++)
-      randomshort += possibilities.charAt(Math.floor(Math.random() * possibilities.length));
+      randomshort += possibilities.charAt(Math.floor(Math.random() * possibilities.length)).toString();
   
     return randomshort;
 }
+
+//finds urls rreated by specific user
+function urlsForUser(urlDatabase, id) {
+  var useridurlDatabase = {}
+  for (shortURL in urlDatabase) {
+    if (urlDatabase[shortURL].userID == id) {
+      useridurlDatabase[shortURL] = urlDatabase[shortURL]
+    };
+  } 
+  return useridurlDatabase
+};
 
 app.get("/", (req, res) => {
   res.send("Hello this is Tinyapp!");
@@ -54,7 +66,9 @@ app.get("/hello", (req, res) => {
 //page to show all shortened urls
 app.get("/urls", (req, res) => {
   if (req.cookies["user_id"]) {
-    let templateVars = { urls: urlDatabase, useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
+    let user = req.cookies["user_id"]
+    let urlDatabases = urlsForUser(urlDatabase, user)
+    let templateVars = { urls: urlDatabases, userid: req.cookies["user_id"]};
     res.render("urls_index", templateVars);
     } else {
       res.redirect(`http://localhost:${PORT}/login`);
@@ -64,7 +78,7 @@ app.get("/urls", (req, res) => {
 //page for new URL shortening
 app.get("/urls/new", (req, res) => {
   if (req.cookies["user_id"]) {
-  let templateVars = {useremail: users[req.cookies["user_id"]].email, userid: req.cookies["user_id"]};
+  let templateVars = {userid: req.cookies["user_id"]};
   res.render("urls_new", templateVars)
   } else {
     res.redirect(`http://localhost:${PORT}/login`);
@@ -97,9 +111,15 @@ app.get("/u/:shortURL", (req, res) => {
 
 //page for specific shortURL
 app.get("/urls/:id", (req, res) => {
+  let user = req.cookies["user_id"]
+  let urlDatabases = urlsForUser(urlDatabase, user)
   if (req.cookies["user_id"]) {
-    let templateVars = { shortURL: req.params.id, longURL: urlDatabase[req.params.id].longu, userid: req.cookies["user_id"], useremail: users[req.cookies["user_id"]].email};
-    res.render("urls_show", templateVars);
+    if (!urlDatabases[req.params.id]) {
+      res.status(406).send('ERROR!!! shortURL does not belong to you. <a href="/urls"> <br> Go Back</a>');
+      } else {
+        let templateVars = { shortURL: req.params.id, longURL: urlDatabases[req.params.id].longu, userid: req.cookies["user_id"] };
+        res.render("urls_show", templateVars);
+      }
     } else {
       res.redirect(`http://localhost:${PORT}/login`);
     }
@@ -120,7 +140,7 @@ app.post("/register", (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     res.status(400).send('ERROR!!! Please input email and password to register. <a href="/register"> <br> Go Back</a>');
     } else {
-      let newId = generateRandomString(6)
+      let newId = generateRandomString(6).toString()
       let email = req.body.email
       let password = req.body.password
       users[newId] = {
@@ -129,8 +149,9 @@ app.post("/register", (req, res) => {
         password: req.body.password
       };
       res.cookie('user_id', newId)
+      console.log(users)
       res.redirect("/urls");
-  }
+  } 
 });
 
 //post for deleting entry pair of shortURL and longURL
@@ -150,13 +171,15 @@ app.post("/urls/:id", (req, res) => {
 
 //creates cookie for inputted username
 app.post("/login", (req, res) => {
+  console.log(users)
   for (id in users) {
-  if (req.body.email === users[id].email && users[id].password === req.body.password) {
+  if (users[id].email === req.body.email && users[id].password === req.body.password) {
     res.cookie('user_id', id)
+    res.redirect(`http://localhost:${PORT}/urls/`);
+    return;
   } else {
     res.status(403).send('ERROR!!! Please input correct email and password to login. <a href="/login"> <br> Go Back</a>');
   }
-  res.redirect(`http://localhost:${PORT}/urls/`);
   }
 });
 
