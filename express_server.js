@@ -84,7 +84,7 @@ app.get("/urls", (req, res) => {
     let templateVars = { urls: urlDatabases, userid: req.session.user_id, useremail: users[req.session.user_id].email};
     res.render("urls_index", templateVars);
     } else {
-      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a><br> <a href="/register"><button type="button">Register!</button></a>');
     }
 });
 
@@ -110,7 +110,7 @@ app.get("/urls/:id", (req, res) => {
         res.render("urls_show", templateVars);
       }
     } else {
-      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a><br> <a href="/register"><button type="button">Register!</button></a>');
     }
 });
 
@@ -136,7 +136,7 @@ app.post("/urls", (req, res) => {
   
     res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
     } else {
-      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a><br> <a href="/register"><button type="button">Register!</button></a>');
     }
 });
 
@@ -148,7 +148,7 @@ app.post("/urls/:id", (req, res) => {
     urlDatabase[shortURL].longu = longURL
     res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
     } else {
-      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a><br> <a href="/register"><button type="button">Register!</button></a>');
     }
 });
 
@@ -193,7 +193,11 @@ app.post("/register", (req, res) => {
   if (req.body.email === '' || req.body.password === '') {
     res.status(400).send('ERROR!!! Please input email and password to register. <br> <a href="/register"><button type="button">Go Back!</button></a>');
     } else {
-      let newId = generateRandomString(6).toString()
+      for (id in users) {
+        if (users[id].email === req.body.email) {
+          res.status(400).send('ERROR!!! Email already registered. <br> <a href="/register"><button type="button">Go Back!</button></a>');
+        } else { 
+          let newId = generateRandomString(6).toString()
       let email = req.body.email;
       let password = req.body.password;
       users[newId] = {
@@ -204,7 +208,7 @@ app.post("/register", (req, res) => {
       req.session.user_id = newId;
       res.redirect("/urls");
   } 
-});
+}}});
 
 //POST for logout
 app.post("/logout", (req, res) => {
