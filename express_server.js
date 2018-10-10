@@ -17,7 +17,7 @@ app.use(cookieSession({
 }))
 
 const bcrypt = require('bcrypt');
-const password = "purple-monkey-dinosaur"; // you will probably this from req.params
+const password = "password"
 const hashedPassword = bcrypt.hashSync(password, 10);
 
 app.set("view engine", "ejs");
@@ -62,31 +62,29 @@ function urlsForUser(urlDatabase, id) {
   return useridurlDatabase
 };
 
-app.get("/", (req, res) => {
-  res.send("Hello this is Tinyapp!");
-});
-
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
 
-app.get("/urls.json", (req, res) => {
-  res.json(urlDatabase);
+//main domain page
+app.get("/", (req, res) => {
+  if (req.session.user_id) {
+      res.redirect(`http://localhost:${PORT}/urls`);
+    } else {
+      res.redirect(`http://localhost:${PORT}/login`);
+    }
 });
 
-app.get("/hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
 
 //page to show all shortened urls
 app.get("/urls", (req, res) => {
   if (req.session.user_id) {
-    let user = req.session.user_id
-    let urlDatabases = urlsForUser(urlDatabase, user)
+    let user = req.session.user_id;
+    let urlDatabases = urlsForUser(urlDatabase, user);
     let templateVars = { urls: urlDatabases, userid: req.session.user_id, useremail: users[req.session.user_id].email};
     res.render("urls_index", templateVars);
     } else {
-      res.redirect(`http://localhost:${PORT}/login`);
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
     }
 });
 
@@ -94,79 +92,64 @@ app.get("/urls", (req, res) => {
 app.get("/urls/new", (req, res) => {
   if (req.session.user_id) {
   let templateVars = {userid: req.session.user_id, useremail: users[req.session.user_id].email};
-  res.render("urls_new", templateVars)
+  res.render("urls_new", templateVars);
   } else {
     res.redirect(`http://localhost:${PORT}/login`);
+  }
+});
+
+//page for specific shortURL
+app.get("/urls/:id", (req, res) => {
+  let user = req.session.user_id;
+  let urlDatabases = urlsForUser(urlDatabase, user);
+  if (req.session.user_id) {
+    if (!urlDatabases[req.params.id]) {
+      res.status(401).send('ERROR!!! shortURL does not exist or does not belong to you. <br> <a href="/urls"><button type="button">Go Back!</button></a>');
+      } else {
+        let templateVars = { shortURL: req.params.id, longURL: urlDatabases[req.params.id].longu, userid: req.session.user_id, useremail: users[req.session.user_id].email };
+        res.render("urls_show", templateVars);
+      }
+    } else {
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
+    }
+});
+
+//redirects to longURL when shortURL is put in address 
+app.get("/u/:shortURL", (req, res) => {
+  var shortURL = req.params.shortURL;
+  if (shortURL) {
+    let longURL = urlDatabase[shortURL].longu;
+    res.redirect(longURL);
+  } else {
+    res.status(303).send('This shortened URL does not exist. Please create a new one. <br> <a href="/urls/new"><button type="button">Go!</button></a>');
   }
 });
 
 //for creation of new short and long URL pair
 app.post("/urls", (req, res) => {
   if (req.session.user_id) {
-    var shortURL = generateRandomString(6)
-    let longURL = req.body.longURL
-    let user = req.session.user_id
+    var shortURL = generateRandomString(6);
+    let longURL = req.body.longURL;
+    let user = req.session.user_id;
     urlDatabase[shortURL] = { longu: longURL,
                               userID: user }
   
     res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
-    // res.send("Ok");         // Respond with 'Ok' (we will replace this)
     } else {
-      res.redirect(`http://localhost:${PORT}/login`);
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
     }
 });
 
-//redirects to longURL when shortURL is put in address 
-app.get("/u/:shortURL", (req, res) => {
-  let shortURL = req.params.shortURL
-  let longURL = urlDatabase[shortURL].longu
-  res.redirect(longURL);
-});
-
-
-//page for specific shortURL
-app.get("/urls/:id", (req, res) => {
-  let user = req.session.user_id
-  let urlDatabases = urlsForUser(urlDatabase, user)
+//post for updating the longURL value of shortURL
+app.post("/urls/:id", (req, res) => {
   if (req.session.user_id) {
-    if (!urlDatabases[req.params.id]) {
-      res.status(406).send('ERROR!!! shortURL does not belong to you. <a href="/urls"> <br> Go Back</a>');
-      } else {
-        let templateVars = { shortURL: req.params.id, longURL: urlDatabases[req.params.id].longu, userid: req.session.user_id, useremail: users[req.session.user_id].email };
-        res.render("urls_show", templateVars);
-      }
+    let shortURL = req.params.id
+    let longURL = req.body.longURL
+    urlDatabase[shortURL].longu = longURL
+    res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
     } else {
-      res.redirect(`http://localhost:${PORT}/login`);
+      res.status(401).send('Please login or register to use TinyApp. <br> <a href="/login"><button type="button">Login!</button></a>');
     }
-});
-
-//page for registration
-app.get("/register", (req, res) => {
-  res.render("register");
-});
-
-//page for login
-app.get("/login", (req, res) => {
-  res.render("login");
-});
-
-//post for resgistration 
-app.post("/register", (req, res) => {
-  if (req.body.email === '' || req.body.password === '') {
-    res.status(400).send('ERROR!!! Please input email and password to register. <a href="/register"> <br> Go Back</a>');
-    } else {
-      let newId = generateRandomString(6).toString()
-      let email = req.body.email
-      let password = req.body.password
-      users[newId] = {
-        id: newId,
-        email: req.body.email,
-        password: req.body.password
-      };
-      req.session.user_id = newId
-      console.log(users)
-      res.redirect("/urls");
-  } 
 });
 
 //post for deleting entry pair of shortURL and longURL
@@ -175,32 +158,56 @@ app.post("/urls/:id/delete", (req, res) => {
   res.redirect("/urls");
 });
 
+//page for login
+app.get("/login", (req, res) => {
+  if (req.session.user_id) {
+      res.redirect(`http://localhost:${PORT}/urls/`);
+    } else {
+      res.render("login");
+    }
+});
 
-//post for updating the longURL value of shortURL
-app.post("/urls/:id", (req, res) => {
-  let shortURL = req.params.id
-  let longURL = req.body.longURL
-  urlDatabase[shortURL].longu = longURL
-  res.redirect(`http://localhost:${PORT}/urls/` + shortURL);
+//page for registration
+app.get("/register", (req, res) => {
+  if (req.session.user_id) {
+    res.redirect(`http://localhost:${PORT}/urls/`);
+  } else {
+    res.render("register");
+  }
 });
 
 //creates cookie for inputted username
 app.post("/login", (req, res) => {
-  console.log(users)
-  console.log(req.body.email)
-  console.log(req.body.password)
   for (id in users) {
   if (users[id].email === req.body.email && users[id].password === req.body.password) {
-    req.session.user_id = id
+    req.session.user_id = id;
     res.redirect(`http://localhost:${PORT}/urls/`);
     return;
     } 
   }
-    res.status(403).send('ERROR!!! Please input correct email and password to login. <a href="/login"> <br> Go Back</a>');
+    res.status(403).send('ERROR!!! Please input correct email and password to login. <br><a href="/login"><button type="button">Go Back!</button></a>');
   });
+
+//post for resgistration 
+app.post("/register", (req, res) => {
+  if (req.body.email === '' || req.body.password === '') {
+    res.status(400).send('ERROR!!! Please input email and password to register. <br> <a href="/register"><button type="button">Go Back!</button></a>');
+    } else {
+      let newId = generateRandomString(6).toString()
+      let email = req.body.email;
+      let password = req.body.password;
+      users[newId] = {
+        id: newId,
+        email: req.body.email,
+        password: req.body.password
+      };
+      req.session.user_id = newId;
+      res.redirect("/urls");
+  } 
+});
 
 //POST for logout
 app.post("/logout", (req, res) => {
-  req.session.user_id = null
+  req.session.user_id = null;
   res.redirect(`http://localhost:${PORT}/urls/`);
 });
