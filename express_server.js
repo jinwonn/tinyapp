@@ -3,6 +3,7 @@ var cookieParser = require('cookie-parser')
 var app = express();
 var PORT = 8080; // default port 8080
 const bodyParser = require("body-parser");
+const bcrypt = require('bcrypt');
 
 var cookieSession = require('cookie-session')
 var express = require('express')
@@ -16,10 +17,6 @@ app.use(cookieSession({
   maxAge: 24 * 60 * 60 * 1000 // 24 hours
 }))
 
-const bcrypt = require('bcrypt');
-const password = "password"
-const hashedPassword = bcrypt.hashSync(password, 10);
-
 app.set("view engine", "ejs");
 app.use(cookieParser());
 app.use(bodyParser.urlencoded({extended: true}));
@@ -29,7 +26,12 @@ var users = {
   "123456": {
     id: "123456", 
     email: "email@email.com", 
-    password: "password"
+    password: bcrypt.hashSync("password", 10)
+  },
+  "123457": {
+    id: "123457", 
+    email: "test@email.com", 
+    password: bcrypt.hashSync("password1", 10)
   }
 }
 
@@ -179,7 +181,7 @@ app.get("/register", (req, res) => {
 //creates cookie for inputted username
 app.post("/login", (req, res) => {
   for (id in users) {
-  if (users[id].email === req.body.email && users[id].password === req.body.password) {
+  if (users[id].email === req.body.email && bcrypt.compareSync(req.body.password, users[id].password)) {
     req.session.user_id = id;
     res.redirect(`http://localhost:${PORT}/urls/`);
     return;
@@ -203,7 +205,7 @@ app.post("/register", (req, res) => {
       users[newId] = {
         id: newId,
         email: req.body.email,
-        password: req.body.password
+        password: bcrypt.hashSync(password, 10)
       };
       req.session.user_id = newId;
       res.redirect("/urls");
