@@ -4,9 +4,8 @@ Tiny App is a full stack web app built with Node and Express that allows users t
 
 ## Final Product
 
-!["dscrpt"](#)
-!["dscrpt"](#)
-!["dscrpt"](#)
+!["Main Page Showing URLs"](https://github.com/jinwonn/tinyapp/blob/master/docs/main_urls_page.png)
+![Registration Page](https://github.com/jinwonn/tinyapp/blob/master/docs/register_page.png)
 
 ## Dependancies
 - Node.js
