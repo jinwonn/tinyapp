@@ -1,25 +1,18 @@
 var express = require("express");
-var cookieParser = require('cookie-parser')
 var app = express();
 var PORT = 8080; // default port 8080
-const bodyParser = require("body-parser");
-const bcrypt = require('bcrypt');
-
+var bodyParser = require("body-parser");
+var bcrypt = require('bcrypt');
 var cookieSession = require('cookie-session')
 var express = require('express')
 
-var app = express()
-
+app.set("view engine", "ejs");
+app.use(bodyParser.urlencoded({extended: true}));
 app.use(cookieSession({
   name: 'session',
   keys: ["secret-k-e-y"],
-  // Cookie Options
-  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  maxAge: 24 * 60 * 60 * 1000 
 }))
-
-app.set("view engine", "ejs");
-app.use(cookieParser());
-app.use(bodyParser.urlencoded({extended: true}));
 
 // database for users of website 
 var users = { 
@@ -59,10 +52,10 @@ function urlsForUser(urlDatabase, id) {
   for (shortURL in urlDatabase) {
     if (urlDatabase[shortURL].userID == id) {
       useridurlDatabase[shortURL] = urlDatabase[shortURL]
-    };
+    }
   } 
   return useridurlDatabase
-};
+}
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
